@@ -1,15 +1,19 @@
-# Only track these files (everything ignored by default)
+# Everything is ignored by default
 *
 
-# Except these
-!index.html
-!ai_doc_history.json
-!observatory_aquarium.html
-!run_observatory_26.py
-!.gitignore
-
-# Never track data files
+# Never track data files (licensed ranking exports, author lists, caches)
 *.xlsx
 *.csv
 *.png
 *.bat
+
+# Except these (must come after the rules above: the last matching rule wins)
+!index.html
+!ai_doc_history.json
+!observatory_aquarium.html
+!run_aquarium.py
+!scrape_gs_metrics.py
+!merge_jif.py
+!venue_aliases.csv
+!UPDATE_INSTRUCTIONS.txt
+!.gitignore

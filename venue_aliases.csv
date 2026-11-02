@@ -1,0 +1,32 @@
+venue,source,target,note
+International Conference on Human Factors in Computing Systems,jufo,50105,CHI main conference (JUFO 3)
+International Conference on Human Factors in Computing Systems,gs,Computer Human Interaction (CHI),CHI
+CHI Extended Abstracts,jufo,73110,CHI EA is listed separately in JUFO (level 0)
+International Conference on Language Resources and Evaluation,jufo,70622,LREC proceedings - NOT the journal Language Resources and Evaluation
+Conference on Empirical Methods in Natural Language Processing,jufo,94085,EMNLP (in JUFO but currently without a level)
+Adaptive Agents and Multi-Agent Systems,jufo,58035,AAMAS conference
+IEEE Workshop/Winter Conference on Applications of Computer Vision,jufo,57596,WACV
+IEEE Workshop/Winter Conference on Applications of Computer Vision,gs,IEEE/CVF Winter Conference on Applications of Computer Vision (WACV),WACV
+International Conference on Computing in Cardiology,jufo,72942,CinC
+Information and Communication Technology Convergence,jufo,90637,ICTC
+IEEE International Conference on Distributed Computing Systems,jufo,58061,ICDCS
+Automatic Speech Recognition & Understanding,jufo,94142,IEEE ASRU
+International Conference on 3D Vision,jufo,90303,3DV
+2025 Joint European Conference on Networks and Communications & 6G Summit (EuCNC/6G Summit),jufo,88217,EuCNC
+ACM Trans. Multim. Comput. Commun. Appl.,jufo,50147,ACM TOMM (abbreviated journal name)
+Proc. ACM Hum. Comput. Interact.,jufo,86567,PACM HCI (abbreviated journal name)
+Proc. ACM Hum. Comput. Interact.,gs,Proceedings of the ACM on Human-Computer Interaction,PACM HCI
+ACM Trans. Hum. Robot Interact.,jufo,85425,ACM THRI
+ACM Trans. Inf. Syst.,jufo,50141,ACM TOIS
+Briefings Bioinform.,jufo,52650,Briefings in Bioinformatics
+Informatics Educ.,jufo,57822,Informatics in Education
+Computer Vision and Pattern Recognition,gs,IEEE/CVF Conference on Computer Vision and Pattern Recognition,CVPR
+IEEE International Conference on Computer Vision,gs,IEEE/CVF International Conference on Computer Vision,ICCV
+North American Chapter of the Association for Computational Linguistics,gs,Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (HLT-NAACL),NAACL
+Spoken Language Technology Workshop,gs,IEEE Spoken Language Technology Workshop (SLT),IEEE SLT
+IEEE Conference on Virtual Reality and 3D User Interfaces,gs,IEEE Virtual Reality Conference,IEEE VR
+Neural Information Processing Systems,jufo,50535,NeurIPS (JUFO lists it as "Advances in neural information processing systems")
+CHI Conference on Human Factors in Computing Systems,jufo,50105,CHI (another spelling used by Semantic Scholar)
+CHI Conference on Human Factors in Computing Systems,gs,Computer Human Interaction (CHI),CHI
+Proceedings of the 2026 ACM International Symposium on Wearable Computers,jufo,57450,ISWC = Wearable Computers (NOT the Semantic Web Conference)
+Lirias,jufo,58030,Lirias is a repository; the one paper here is AISTATS - recheck if more Lirias papers appear

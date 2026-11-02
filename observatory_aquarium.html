@@ -86,7 +86,25 @@ tbody tr:hover{background:rgba(78,205,196,0.04)}
 .btn-glow{background:linear-gradient(135deg,var(--glow),#3ab8b0);color:var(--deep);border-color:var(--glow);font-weight:700}
 .btn-glow:hover{background:linear-gradient(135deg,#5fe0d7,var(--glow))}
 .hidden{display:none}.center{text-align:center}.mt-16{margin-top:16px}.mb-16{margin-bottom:16px}
-.history-scroll{overflow-x:auto;padding-bottom:8px}
+.history-scroll{overflow:hidden;padding-bottom:4px}
+/* Filters */
+.filters{background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;padding:14px 18px;margin-bottom:20px;backdrop-filter:blur(14px)}
+.f-row{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end}
+.f-item{display:flex;flex-direction:column;gap:4px;min-width:96px}
+.f-item label{font-size:10px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em}
+.f-item select,.f-item input{background:rgba(0,25,48,0.6);border:1px solid var(--glass-border);border-radius:8px;color:var(--text);font-family:'Outfit',sans-serif;font-size:12px;padding:6px 8px;outline:none}
+.f-item input[type=number]{width:84px}.f-item input[type=search]{width:190px}
+.f-item select:focus,.f-item input:focus{border-color:var(--glow)}
+.f-item.active select,.f-item.active input{border-color:var(--glow);box-shadow:0 0 0 1px rgba(78,205,196,0.25)}
+.f-meta{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--text-dim)}
+.f-count{font-family:'JetBrains Mono',monospace;color:var(--foam)}
+.f-mode{display:inline-flex;border:1px solid var(--glass-border);border-radius:8px;overflow:hidden}
+.f-mode button{background:transparent;border:none;color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;padding:5px 10px;cursor:pointer}
+.f-mode button.on{background:var(--teal);color:var(--foam)}
+.f-reset{background:transparent;border:1px solid var(--glass-border);border-radius:8px;color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:11px;padding:5px 10px;cursor:pointer}
+.f-reset:hover{color:var(--glow);border-color:var(--glow)}
+.f-note{font-size:11px;color:var(--text-muted)}
+@media (max-width:640px){.f-item{flex:1 1 calc(50% - 8px);min-width:0}.f-item select,.f-item input,.f-item input[type=number],.f-item input[type=search]{width:100%}.f-item[data-f="q"],.f-item[data-f="author"]{flex-basis:100%}}
 /* Footer */
 .footer{text-align:center;margin-top:24px;padding:16px;font-size:11px;color:var(--text-muted)}
 .footer a{color:var(--teal-light);text-decoration:none}
@@ -118,6 +136,30 @@ tbody tr:hover{background:rgba(78,205,196,0.04)}
     <input type="file" id="fileInput" accept=".xlsx,.xls">
   </div>
 
+  <div class="filters" id="filters">
+    <div class="f-row">
+      <div class="f-item" data-f="sjrq"><label for="f_sjrq">SJR quartile</label>
+        <select id="f_sjrq"><option value="">Any</option><option value="1">Q1</option><option value="2">Q1–Q2</option><option value="3">Q1–Q3</option><option value="4">Any quartile</option></select></div>
+      <div class="f-item" data-f="jifq"><label for="f_jifq">JIF quartile</label>
+        <select id="f_jifq"><option value="">Any</option><option value="1">Q1</option><option value="2">Q1–Q2</option><option value="3">Q1–Q3</option><option value="4">Any quartile</option></select></div>
+      <div class="f-item" data-f="jufo"><label for="f_jufo">JUFO level</label>
+        <select id="f_jufo"><option value="">Any</option><option value="0">≥ 0 (listed)</option><option value="1">≥ 1</option><option value="2">≥ 2</option><option value="3">3</option></select></div>
+      <div class="f-item" data-f="h5"><label for="f_h5">h5-index ≥</label><input type="number" id="f_h5" min="0" step="10" placeholder="e.g. 50"></div>
+      <div class="f-item" data-f="jif"><label for="f_jif">JIF ≥</label><input type="number" id="f_jif" min="0" step="0.5" placeholder="e.g. 3"></div>
+      <div class="f-item" data-f="sjr"><label for="f_sjr">SJR ≥</label><input type="number" id="f_sjr" min="0" step="0.1" placeholder="e.g. 1"></div>
+      <div class="f-item" data-f="year"><label for="f_year">Year</label><select id="f_year"><option value="">All</option></select></div>
+      <div class="f-item" data-f="author"><label for="f_author">Author</label><select id="f_author"><option value="">All</option></select></div>
+      <div class="f-item" data-f="q"><label for="f_q">Title / venue</label><input type="search" id="f_q" placeholder="Search…"></div>
+    </div>
+    <div class="f-meta">
+      <span>Rank filters must match</span>
+      <span class="f-mode"><button type="button" id="f_all" class="on">all</button><button type="button" id="f_any">any</button></span>
+      <span class="f-count" id="f_count"></span>
+      <button type="button" class="f-reset" id="f_reset">Reset filters</button>
+      <span class="f-note">Papers without a value fail a rank filter. The Progress tab always shows all papers.</span>
+    </div>
+  </div>
+
   <div id="tab-dashboard">
     <div class="stats-row" id="statsRow"></div>
     <div class="charts-grid" id="chartsGrid"></div>
@@ -145,35 +187,91 @@ const Q_COL={Q1:"#4ecdc4",Q2:"#3a8ba8",Q3:"#f7b731",Q4:"#eb4d4b","N/A":"#4a7080"
 const J_COL={"3":"#4ecdc4","2":"#3a8ba8","1":"#f7b731","0":"#eb4d4b","N/A":"#4a7080"};
 const H5_COL={"200+":"#4ecdc4","100–199":"#3a8ba8","50–99":"#f7b731","1–49":"#eb4d4b","N/A":"#4a7080"};
 
-let papers=[],history=[];
+let allPapers=[],papers=[],history=[];
 let sortCol="author_name",sortAsc=true;
+let currentTab="dashboard";
 
 window.addEventListener("DOMContentLoaded",()=>{
-  if(typeof EMBEDDED_PAPERS!=="undefined")papers=EMBEDDED_PAPERS;
+  if(typeof EMBEDDED_PAPERS!=="undefined")allPapers=EMBEDDED_PAPERS;
   if(typeof EMBEDDED_HISTORY!=="undefined")history=EMBEDDED_HISTORY;
   if(typeof EMBEDDED_DATE!=="undefined"&&typeof EMBEDDED_SOURCE!=="undefined")
     document.getElementById("uploadLabel").textContent=`Data from ${EMBEDDED_SOURCE} (${EMBEDDED_DATE}) — upload newer file to update`;
-  if(papers.length)render();
+  initFilters();applyFilters();
 });
 
 document.getElementById("fileInput").addEventListener("change",async function(e){
   const f=e.target.files[0];if(!f)return;
   const wb=XLSX.read(new Uint8Array(await f.arrayBuffer()),{type:"array"});
-  papers=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""});
-  papers.forEach(p=>{Object.keys(p).forEach(k=>{if(p[k]==="NaN"||p[k]==="nan")p[k]=""})});
+  allPapers=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""});
+  allPapers.forEach(p=>{Object.keys(p).forEach(k=>{if(p[k]==="NaN"||p[k]==="nan")p[k]=""})});
   document.getElementById("uploadArea").classList.add("loaded");
-  document.getElementById("uploadLabel").textContent=`✓ Loaded ${papers.length} papers from ${f.name}`;
-  render();
+  document.getElementById("uploadLabel").textContent=`✓ Loaded ${allPapers.length} papers from ${f.name}`;
+  initFilters();applyFilters();
 });
 
-function showTab(t){["dashboard","history","table"].forEach(n=>{document.getElementById("tab-"+n).classList.toggle("hidden",n!==t)});
+function showTab(t){currentTab=t;["dashboard","history","table"].forEach(n=>{document.getElementById("tab-"+n).classList.toggle("hidden",n!==t)});
   document.querySelectorAll(".tab").forEach((el,i)=>{el.classList.toggle("active",["dashboard","history","table"][i]===t)});
   if(t==="history")renderHistory();if(t==="table")renderTable();}
 
+/* ─── Filters ─── */
+const RANK_FILTERS=["sjrq","jifq","jufo","h5","jif","sjr"],SCOPE_FILTERS=["year","author","q"];
+let fMode="all";
+function fv(id){return document.getElementById("f_"+id).value.trim();}
+function num(v){return v===""||v==null||isNaN(Number(v))?null:Number(v);}
+function qnum(q){const m=/^Q([1-4])$/.exec(String(q||""));return m?Number(m[1]):null;}
+function initFilters(){
+  const years=[...new Set(allPapers.map(p=>p.year).filter(y=>y!==""&&y!=null).map(Number))].sort((a,b)=>b-a);
+  const authors=[...new Set(allPapers.map(p=>p.author_name).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));
+  const fill=(id,vals)=>{const s=document.getElementById(id),keep=s.value;s.innerHTML=`<option value="">All</option>`+vals.map(v=>`<option value="${esc(String(v))}">${esc(String(v))}</option>`).join("");s.value=vals.map(String).includes(keep)?keep:"";};
+  fill("f_year",years);fill("f_author",authors);
+  readHash();
+}
+function rankTests(){
+  const t=[],sq=num(fv("sjrq")),jq=num(fv("jifq")),ju=num(fv("jufo")),h5=num(fv("h5")),jif=num(fv("jif")),sjr=num(fv("sjr"));
+  if(sq!=null)t.push(p=>{const q=qnum(p.scimago_quartile);return q!=null&&q<=sq;});
+  if(jq!=null)t.push(p=>{const q=qnum(p.jif_quartile);return q!=null&&q<=jq;});
+  if(ju!=null)t.push(p=>{const v=num(p.jufo_level);return v!=null&&v>=ju;});
+  if(h5!=null)t.push(p=>{const v=num(p.gs_h5_index);return v!=null&&v>=h5;});
+  if(jif!=null)t.push(p=>{const v=num(p.jif);return v!=null&&v>=jif;});
+  if(sjr!=null)t.push(p=>{const v=num(p.scimago_sjr);return v!=null&&v>=sjr;});
+  return t;
+}
+function applyFilters(){
+  const tests=rankTests(),yr=fv("year"),au=fv("author"),q=fv("q").toLowerCase();
+  papers=allPapers.filter(p=>{
+    if(yr&&String(p.year)!==yr)return false;
+    if(au&&p.author_name!==au)return false;
+    if(q&&!(String(p.title||"")+" "+String(p.venue||"")).toLowerCase().includes(q))return false;
+    if(!tests.length)return true;
+    return fMode==="all"?tests.every(f=>f(p)):tests.some(f=>f(p));
+  });
+  [...RANK_FILTERS,...SCOPE_FILTERS].forEach(id=>document.querySelector(`.f-item[data-f="${id}"]`).classList.toggle("active",fv(id)!==""));
+  const active=[...RANK_FILTERS,...SCOPE_FILTERS].some(id=>fv(id)!=="");
+  document.getElementById("f_count").textContent=active?`Showing ${papers.length} of ${allPapers.length} papers`:`${allPapers.length} papers`;
+  writeHash();render();
+  if(currentTab==="table")renderTable();
+}
+function writeHash(){
+  const p=new URLSearchParams();[...RANK_FILTERS,...SCOPE_FILTERS].forEach(id=>{if(fv(id)!=="")p.set(id,fv(id));});
+  if(fMode==="any"&&rankTests().length)p.set("mode","any");
+  const h=p.toString();history_replace(h?"#"+h:" ");
+}
+function history_replace(h){try{window.history.replaceState(null,"",h===" "?location.pathname+location.search:h);}catch(e){}}
+function readHash(){
+  const p=new URLSearchParams(location.hash.slice(1));
+  [...RANK_FILTERS,...SCOPE_FILTERS].forEach(id=>{if(p.has(id))document.getElementById("f_"+id).value=p.get(id);});
+  setMode(p.get("mode")==="any"?"any":"all",false);
+}
+function setMode(m,apply=true){fMode=m;document.getElementById("f_all").classList.toggle("on",m==="all");document.getElementById("f_any").classList.toggle("on",m==="any");if(apply)applyFilters();}
+[...RANK_FILTERS,...SCOPE_FILTERS].forEach(id=>{const el=document.getElementById("f_"+id);el.addEventListener(el.tagName==="SELECT"?"change":"input",applyFilters);});
+document.getElementById("f_all").addEventListener("click",()=>setMode("all"));
+document.getElementById("f_any").addEventListener("click",()=>setMode("any"));
+document.getElementById("f_reset").addEventListener("click",()=>{[...RANK_FILTERS,...SCOPE_FILTERS].forEach(id=>document.getElementById("f_"+id).value="");setMode("all");});
+
 function render(){
-  const yrs=papers.map(p=>p.year).filter(y=>y&&y!=="");
+  const yrs=allPapers.map(p=>p.year).filter(y=>y&&y!=="");
   if(yrs.length){const mn=Math.min(...yrs.map(Number)),mx=Math.max(...yrs.map(Number));
-    document.getElementById("subtitleText").innerHTML=`${papers.length} papers (${mn===mx?mn:mn+"–"+mx}) · ${new Set(papers.map(p=>p.author_name)).size} authors — SCImago · JUFO · JIF · Google Scholar`;}
+    document.getElementById("subtitleText").innerHTML=`${allPapers.length} papers (${mn===mx?mn:mn+"–"+mx}) · ${new Set(allPapers.map(p=>p.author_name)).size} authors — SCImago · JUFO · JIF · Google Scholar`;}
   renderStats();renderCharts();
 }
 function countBy(a,k){const c={};a.forEach(d=>{const v=d[k]!=null&&d[k]!==""?String(d[k]):"N/A";c[v]=(c[v]||0)+1});return c;}
@@ -251,48 +349,64 @@ function renderHistory(){
   }
   html+=`</tbody></table></div>`;el.innerHTML=html;
 }
+/* Charts fit the card width: x positions are spread over the available width and
+   date labels are thinned so they never overlap. Re-drawn on window resize. */
+function chartW(){const el=document.getElementById("historyContent");return Math.max(220,(el&&el.clientWidth?el.clientWidth:900)-50);}
+function xAxis(hist,pad,pw){
+  const xs=hist.map((_,i)=>pad+(hist.length>1?i*(pw/(hist.length-1)):pw/2));
+  const span=hist.length&&hist[0].date.slice(0,4)!==hist[hist.length-1].date.slice(0,4);
+  const fmt=d=>span?d.slice(2):d.slice(5);
+  const step=Math.max(1,Math.ceil(hist.length/Math.max(2,Math.floor(pw/56))));
+  const show=new Set();for(let i=hist.length-1;i>=0;i-=step)show.add(i);show.add(0);   // always label the newest point
+  if(hist.length>1&&step>1){const s=[...show].sort((a,b)=>a-b);if(s[1]-s[0]<step*0.6)show.delete(s[1]===hist.length-1?0:s[1]);}
+  const anc=i=>hist.length>1&&i===0?"start":hist.length>1&&i===hist.length-1?"end":"middle";
+  return{xs,label:(i,h)=>show.has(i)?`<text x="${xs[i]}" y="${h-6}" text-anchor="${anc(i)}" fill="var(--text-muted)" font-size="9" font-family="'JetBrains Mono'">${fmt(hist[i].date)}</text>`:"",r:hist.length>40?2:3};
+}
 function stackedChart(title,hist,series){
-  const w=Math.max(600,hist.length*90),h=240,pad=50,padR=20,padT=20,padB=44;
-  const pw=w-pad-padR,ph=h-padT-padB;
+  const w=chartW(),h=230,pad=44,padR=14,padT=16,padB=26;
+  const pw=w-pad-padR,ph=h-padT-padB,ax=xAxis(hist,pad,pw);
   const maxStack=Math.max(...hist.map(snap=>series.reduce((s,sr)=>s+(snap[sr.k]||0),0)),1);
-  let svg=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block">`;
+  let svg=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;max-width:100%">`;
   for(let i=0;i<=4;i++){const y=padT+ph*(i/4);const v=Math.round(maxStack*(1-i/4));
     svg+=`<line x1="${pad}" y1="${y}" x2="${w-padR}" y2="${y}" stroke="var(--glass-border)" stroke-dasharray="4,4"/>`;
     svg+=`<text x="${pad-8}" y="${y+4}" text-anchor="end" fill="var(--text-muted)" font-size="10" font-family="'JetBrains Mono'">${v}</text>`;}
-  hist.forEach((snap,i)=>{const x=pad+(hist.length>1?i*(pw/(hist.length-1)):pw/2);
-    svg+=`<text x="${x}" y="${h-6}" text-anchor="middle" fill="var(--text-muted)" font-size="9" font-family="'JetBrains Mono'" transform="rotate(-30 ${x} ${h-6})">${snap.date.slice(5)}</text>`;});
+  hist.forEach((_,i)=>{svg+=ax.label(i,h);});
   for(let si=series.length-1;si>=0;si--){
-    const pts=hist.map((snap,i)=>{const x=pad+(hist.length>1?i*(pw/(hist.length-1)):pw/2);let cum=0;for(let j=0;j<=si;j++)cum+=(snap[series[j].k]||0);return{x,y:padT+ph-(cum/maxStack)*ph};});
-    const basePts=hist.map((snap,i)=>{const x=pad+(hist.length>1?i*(pw/(hist.length-1)):pw/2);let cum=0;for(let j=0;j<si;j++)cum+=(snap[series[j].k]||0);return{x,y:padT+ph-(cum/maxStack)*ph};});
+    const pts=hist.map((snap,i)=>{let cum=0;for(let j=0;j<=si;j++)cum+=(snap[series[j].k]||0);return{x:ax.xs[i],y:padT+ph-(cum/maxStack)*ph};});
+    const basePts=hist.map((snap,i)=>{let cum=0;for(let j=0;j<si;j++)cum+=(snap[series[j].k]||0);return{x:ax.xs[i],y:padT+ph-(cum/maxStack)*ph};});
     svg+=`<path d="${pts.map((p,i)=>`${i?'L':'M'}${p.x},${p.y}`).join(" ")+basePts.reverse().map(p=>`L${p.x},${p.y}`).join(" ")}Z" fill="${series[si].c}" fill-opacity="0.45" stroke="${series[si].c}" stroke-width="1.5"/>`;
   }
-  hist.forEach((snap,i)=>{const x=pad+(hist.length>1?i*(pw/(hist.length-1)):pw/2);let cum=0;series.forEach(sr=>{cum+=(snap[sr.k]||0)});
-    svg+=`<circle cx="${x}" cy="${padT+ph-(cum/maxStack)*ph}" r="3" fill="var(--foam)" stroke="var(--deep)" stroke-width="1.5"/>`;});
+  hist.forEach((snap,i)=>{let cum=0;series.forEach(sr=>{cum+=(snap[sr.k]||0)});
+    const tip=`${snap.date}: `+series.map(sr=>`${sr.l} ${snap[sr.k]||0}`).join(", ");
+    svg+=`<circle cx="${ax.xs[i]}" cy="${padT+ph-(cum/maxStack)*ph}" r="${ax.r}" fill="var(--foam)" stroke="var(--deep)" stroke-width="1.5"><title>${tip}</title></circle>`;});
   svg+=`</svg>`;
-  return`<div class="card mb-16"><div class="chart-title">${title}</div><div class="history-scroll">${svg}</div><div class="legend" style="margin-top:6px">${series.map(sr=>`<div class="legend-item"><span class="legend-dot" style="background:${sr.c}"></span>${sr.l}</div>`).join("")}</div></div>`;
+  const last=hist[hist.length-1];
+  return`<div class="card mb-16"><div class="chart-title">${title} <span style="text-transform:none;letter-spacing:0;color:var(--text-muted)">· latest ${last.date}: ${series.map(sr=>`${sr.l} ${last[sr.k]||0}`).join(" · ")}</span></div><div class="history-scroll">${svg}</div><div class="legend" style="margin-top:6px">${series.map(sr=>`<div class="legend-item"><span class="legend-dot" style="background:${sr.c}"></span>${sr.l}</div>`).join("")}</div></div>`;
 }
 function lineChart(title,hist){
-  const w=Math.max(600,hist.length*90),h=200,pad=50,padR=40,padT=20,padB=44;
-  const pw=w-pad-padR,ph=h-padT-padB;
+  const w=chartW(),h=200,pad=44,padR=36,padT=16,padB=26;
+  const pw=w-pad-padR,ph=h-padT-padB,ax=xAxis(hist,pad,pw);
   const maxP=Math.max(...hist.map(s=>s.total),1);
   const maxSJR=Math.max(...hist.filter(s=>s.avg_sjr).map(s=>Number(s.avg_sjr)),1);
-  let svg=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block">`;
+  let svg=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block;max-width:100%">`;
   for(let i=0;i<=4;i++){const y=padT+ph*(i/4);svg+=`<line x1="${pad}" y1="${y}" x2="${w-padR}" y2="${y}" stroke="var(--glass-border)" stroke-dasharray="4,4"/><text x="${pad-8}" y="${y+4}" text-anchor="end" fill="var(--text-muted)" font-size="10" font-family="'JetBrains Mono'">${Math.round(maxP*(1-i/4))}</text>`;}
-  hist.forEach((snap,i)=>{const x=pad+(hist.length>1?i*(pw/(hist.length-1)):pw/2);svg+=`<text x="${x}" y="${h-6}" text-anchor="middle" fill="var(--text-muted)" font-size="9" font-family="'JetBrains Mono'" transform="rotate(-30 ${x} ${h-6})">${snap.date.slice(5)}</text>`;});
-  const totalPts=hist.map((s,i)=>({x:pad+(hist.length>1?i*(pw/(hist.length-1)):pw/2),y:padT+ph-(s.total/maxP)*ph}));
+  hist.forEach((_,i)=>{svg+=ax.label(i,h);});
+  const totalPts=hist.map((s,i)=>({x:ax.xs[i],y:padT+ph-(s.total/maxP)*ph,t:`${s.date}: ${s.total} papers`}));
   svg+=`<polyline fill="none" stroke="var(--foam)" stroke-width="2.5" stroke-linejoin="round" points="${totalPts.map(p=>`${p.x},${p.y}`).join(" ")}"/>`;
-  totalPts.forEach(p=>{svg+=`<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="var(--foam)" stroke="var(--deep)" stroke-width="2"/>`;});
-  const sjrPts=hist.filter(s=>s.avg_sjr).map(s=>{const idx=hist.indexOf(s);return{x:pad+(hist.length>1?idx*(pw/(hist.length-1)):pw/2),y:padT+ph-(Number(s.avg_sjr)/maxSJR)*ph};});
+  totalPts.forEach(p=>{svg+=`<circle cx="${p.x}" cy="${p.y}" r="${ax.r+0.5}" fill="var(--foam)" stroke="var(--deep)" stroke-width="2"><title>${p.t}</title></circle>`;});
+  const sjrPts=hist.map((s,i)=>s.avg_sjr?{x:ax.xs[i],y:padT+ph-(Number(s.avg_sjr)/maxSJR)*ph,t:`${s.date}: avg SJR ${s.avg_sjr}`}:null).filter(Boolean);
   if(sjrPts.length>=2){svg+=`<polyline fill="none" stroke="var(--glow)" stroke-width="2" stroke-dasharray="6,4" stroke-linejoin="round" points="${sjrPts.map(p=>`${p.x},${p.y}`).join(" ")}"/>`;
-    sjrPts.forEach(p=>{svg+=`<circle cx="${p.x}" cy="${p.y}" r="3" fill="var(--glow)" stroke="var(--deep)" stroke-width="1.5"/>`;});
-    for(let i=0;i<=2;i++){const y=padT+ph*(i/2);svg+=`<text x="${w-padR+8}" y="${y+4}" text-anchor="start" fill="var(--glow)" font-size="9" font-family="'JetBrains Mono'">${(maxSJR*(1-i/2)).toFixed(1)}</text>`;}}
+    sjrPts.forEach(p=>{svg+=`<circle cx="${p.x}" cy="${p.y}" r="${ax.r}" fill="var(--glow)" stroke="var(--deep)" stroke-width="1.5"><title>${p.t}</title></circle>`;});
+    for(let i=0;i<=2;i++){const y=padT+ph*(i/2);svg+=`<text x="${w-padR+6}" y="${y+4}" text-anchor="start" fill="var(--glow)" font-size="9" font-family="'JetBrains Mono'">${(maxSJR*(1-i/2)).toFixed(1)}</text>`;}}
   svg+=`</svg>`;
-  return`<div class="card mb-16"><div class="chart-title">${title}</div><div class="history-scroll">${svg}</div><div class="legend" style="margin-top:6px"><div class="legend-item"><span class="legend-dot" style="background:var(--foam)"></span>Total papers</div><div class="legend-item"><span class="legend-dot" style="background:var(--glow)"></span>Avg SJR (right axis)</div></div></div>`;
+  const last=hist[hist.length-1];
+  return`<div class="card mb-16"><div class="chart-title">${title} <span style="text-transform:none;letter-spacing:0;color:var(--text-muted)">· latest ${last.date}: ${last.total} papers, avg SJR ${last.avg_sjr??"—"}</span></div><div class="history-scroll">${svg}</div><div class="legend" style="margin-top:6px"><div class="legend-item"><span class="legend-dot" style="background:var(--foam)"></span>Total papers</div><div class="legend-item"><span class="legend-dot" style="background:var(--glow)"></span>Avg SJR (right axis)</div></div></div>`;
 }
+let _rsz;window.addEventListener("resize",()=>{clearTimeout(_rsz);_rsz=setTimeout(()=>{if(currentTab==="history")renderHistory();},150);});
 function downloadExcel(){
-  if(!papers.length){alert("No data");return;}
-  const today=new Date().toISOString().slice(0,10);
-  const cols=["author_name","author_id","title","year","publicationDate","venue","venue_issn","doi","scimago_quartile","scimago_sjr","jif_quartile","jif","jufo_level","gs_h5_index","gs_h5_median","paper_id"];
+  if(!papers.length){document.getElementById("f_count").textContent="Nothing to download — no papers match the filters";return;}
+  const today=new Date().toISOString().slice(0,10)+(papers.length<allPapers.length?"_filtered":"");
+  const cols=["author_name","author_id","title","year","publicationDate","venue","venue_issn","doi","scimago_quartile","scimago_sjr","jif_quartile","jif","jufo_level","gs_h5_index","gs_h5_median","paper_id","source"];
   const rows=papers.map(p=>{const r={};cols.forEach(c=>{r[c]=p[c]!==undefined?p[c]:""});return r;});
   const ws=XLSX.utils.json_to_sheet(rows);ws["!cols"]=cols.map(c=>({wch:Math.min(Math.max(c.length+2,12),50)}));
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Papers");

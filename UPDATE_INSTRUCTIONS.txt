@@ -1,0 +1,71 @@
+AI-DOC PUBLICATION AQUARIUM - HOW TO UPDATE
+============================================
+
+WEEKLY UPDATE
+-------------
+1. Double-click update_aquarium.bat
+2. Choose P (Preview) if anything changed (new ranking files, new authors, edited aliases):
+   - opens preview.html, writes match_report.csv, history is NOT touched, nothing is pushed
+3. Choose U (Update) for the real run: writes index.html, adds a history snapshot,
+   asks before pushing to GitHub.
+
+
+FILES THE PIPELINE USES (fixed names - replace the file, don't edit the .bat)
+--------------------------------------------------------------------------
+authors.xlsx      author list (name, author_id, status, orcid, gs_user) - first sheet is read
+jufo.csv          JUFO export (jfp.csc.fi -> search all -> CSV)
+scimago.csv       SCImago Journal Rank (scimagojr.com -> Download data), raw download is fine
+jif.csv           made with merge_jif.py from InCites exports (see below)
+gs_metrics.csv    made with scrape_gs_metrics.py (see below)
+venue_aliases.csv hand-curated venue -> ranking links (see below)
+observatory_aquarium.html  page template
+ai-doc-no-text.png         logo (pip install pillow, otherwise it is embedded at full size)
+papers_with_rankings_<date>.xlsx  the newest one is used for the "changed vs previous" report
+
+
+YEARLY RANKING REFRESH
+----------------------
+JUFO (whenever JUFO publishes new levels, at least each January)
+  jfp.csc.fi -> export all channels as CSV -> save as jufo.csv
+
+SCImago (new edition each spring)
+  scimagojr.com -> Journal Rankings -> Download data -> save as scimago.csv
+
+JIF (new JCR release each June) - InCites, Aalto login
+  Analyze -> Journals, Books, Conference Proceedings
+  Dataset: InCites Dataset + ESCI ; Time Period: 5 years ending with the latest JCR year
+  Columns: Journal Impact Factor, JIF Quartile, ISSN, eISSN ; export CSV (max 50,000 rows)
+  If over 50,000 rows: exclude some research areas in export 1, then export 2 = INCLUDE the same areas
+  python merge_jif.py export1.csv export2.csv --output jif.csv
+  (Do not script JCR/InCites downloads - Clarivate's licence forbids systematic downloading.)
+
+Google Scholar Metrics (new release each July)
+  python scrape_gs_metrics.py --contact <your e-mail>
+  ~1-2 hours, resumes if interrupted, stops on CAPTCHA (just run again later)
+  Delete the gs_cache folder first when a new release is out.
+  Rename the result gs_metrics_<year>.csv -> gs_metrics.csv
+
+
+VENUE ALIASES (when a venue gets no ranking although one exists)
+---------------------------------------------------------------
+1. Run Preview, open match_report.csv in Excel
+2. Rows with an empty value show *_how (why it failed) and *_suggest (closest names, for reading only)
+3. Add a row to venue_aliases.csv:
+     venue  = the venue text exactly as in match_report.csv
+     source = jufo | scimago | jif | gs
+     target = Jufo_ID | SCImago Sourceid | ISSN | Google Scholar venue name (or id)
+              or "none" to force "no ranking"
+     note   = free text
+4. Run Preview again and check the row.
+Never accept a suggestion blindly: e.g. LREC (conference) is not the journal
+"Language Resources and Evaluation".
+
+
+AUTHORS WITHOUT A SEMANTIC SCHOLAR PROFILE
+------------------------------------------
+Add columns "orcid" and/or "gs_user" to the author Excel.
+  orcid   : 0000-0002-1825-0097 or the full https://orcid.org/... link
+  gs_user : the 12-character id from the profile link (...citations?user=XXXXXXXXXXXX) or the full link
+Order used: Semantic Scholar (status CONFIRMED + author_id) -> ORCID via OpenAlex -> ORCID public API
+-> Google Scholar profile (first 100 newest items only).
+The "source" column in the Excel shows where each paper came from.
